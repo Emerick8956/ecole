@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 require_once("connexion.php");
@@ -24,7 +25,12 @@ table { border-collapse: collapse; width: 80%; margin: auto; }
 th, td { border: 1px solid #aaa; padding: 10px; text-align: left; }
 th { background-color: #3a7d44; color: white; }
 tr:nth-child(even) { background-color: #f9f9f9; }
-a { text-decoration: none; color: #3a7d44; font-weight: bold; }
+a {
+    text-decoration: none;
+    color: #000;
+    font-weight: bold;
+}
+
 a:hover { text-decoration: underline; }
 h2 { text-align: center; color: #333; }
 </style>
@@ -50,3 +56,5 @@ h2 { text-align: center; color: #333; }
 
 </body>
 </html>
+
+

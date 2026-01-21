@@ -37,11 +37,9 @@ $nb = 0;
 <body>
 
 <h2>Élève : <?= htmlspecialchars($eleve['nom_prenom']) ?></h2>
-
 <table border="1" cellpadding="8">
     <tr>
         <th>Matière</th>
-        <th>Action</th>
     </tr>
 
 <?php foreach ($notes as $n): ?>
@@ -58,23 +56,21 @@ $nb = 0;
     $nb++;
 ?>
 <tr>
-    <td><?= htmlspecialchars($n['nom_matiere']) ?></td>
-    <td>
+    <td style="text-align:center;">
         <a href="details_matiere.php?id_eleve=<?= $id_eleve ?>&matiere=<?= urlencode($n['nom_matiere']) ?>">
-            Voir les détails
+            <?= htmlspecialchars($n['nom_matiere']) ?>
         </a>
     </td>
 </tr>
 <?php endforeach; ?>
 </table>
 
+
 <?php if ($nb > 0): ?>
 <p><strong>Moyenne générale annuelle :
 <?= number_format($total / $nb, 2) ?>
 </strong></p>
 <?php endif; ?>
-
-<p><a href="liste_eleve.php">⬅ Retour à la liste</a></p>
 
 </body>
 </html>
