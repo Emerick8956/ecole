@@ -1,10 +1,8 @@
-
 <?php
 session_start();
 require_once("connexion.php");
 
-// Vérifie si l'utilisateur est connecté
-if(!isset($_SESSION['connecte'])){
+if (!isset($_SESSION['connecte'])) {
     header("Location: login.php");
     exit();
 }
@@ -22,19 +20,15 @@ $eleves = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <style>
 body { font-family: Arial; background: #f0f2f5; padding: 20px;}
 table { border-collapse: collapse; width: 80%; margin: auto; }
-th, td { border: 1px solid #aaa; padding: 10px; text-align: left; }
+th, td { border: 1px solid #aaa; padding: 10px; text-align: center; }
 th { background-color: #3a7d44; color: white; }
 tr:nth-child(even) { background-color: #f9f9f9; }
-a {
-    text-decoration: none;
-    color: #000;
-    font-weight: bold;
-}
-
+a { text-decoration: none; color: #000; font-weight: bold; }
 a:hover { text-decoration: underline; }
 h2 { text-align: center; color: #333; }
 </style>
 </head>
+
 <body>
 
 <h2>Liste des élèves</h2>
@@ -42,16 +36,46 @@ h2 { text-align: center; color: #333; }
 <table>
     <tr>
         <th>Nom et prénom</th>
+        <th>Moyenne annuelle</th>
     </tr>
-    <?php foreach($eleves as $eleve): ?>
-        <tr>
-            <td>
-                <a href="accueil.php?id_eleve=<?= $eleve['id_eleve'] ?>">
-                    <?= htmlspecialchars($eleve['nom_prenom']) ?>
-                </a>
-            </td>
-        </tr>
-    <?php endforeach; ?>
+
+<?php foreach ($eleves as $eleve): ?>
+
+<?php
+    // Récupère les notes de l'élève
+    $stmtNotes = $conn->prepare("SELECT * FROM notes WHERE id_eleve = ?");
+    $stmtNotes->execute([$eleve['id_eleve']]);
+    $notes = $stmtNotes->fetchAll(PDO::FETCH_ASSOC);
+
+    $total = 0;
+    $nb = 0;
+
+    foreach ($notes as $n) {
+        $moyMatiere = (
+            $n['interro1'] +
+            $n['interro2'] +
+            $n['interro3'] +
+            $n['devoir1'] +
+            $n['devoir2']
+        ) / 5;
+
+        $total += $moyMatiere;
+        $nb++;
+    }
+
+    $moyenneGenerale = ($nb > 0) ? number_format($total / $nb, 2) : "-";
+?>
+
+<tr>
+    <td style="text-align:left;">
+        <a href="accueil.php?id_eleve=<?= $eleve['id_eleve'] ?>">
+            <?= htmlspecialchars($eleve['nom_prenom']) ?>
+        </a>
+    </td>
+    <td><?= $moyenneGenerale ?></td>
+</tr>
+
+<?php endforeach; ?>
 </table>
 
 </body>

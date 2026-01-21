@@ -2,105 +2,104 @@
 session_start();
 require_once("connexion.php");
 
-$eleve_id = $_SESSION['eleve_id'];
-$nom_eleve = $_SESSION['nom_eleve'];
+// Vérifie si on a l'id de l'élève et la matière
+if (!isset($_GET['id_eleve']) || !isset($_GET['matiere'])) {
+    header("Location: liste_eleve.php");
+    exit();
+}
+
+$id_eleve = $_GET['id_eleve'];
+$matiere = $_GET['matiere'];
+
+// Récupère le nom de l'élève
+$stmt = $conn->prepare("SELECT nom_prenom FROM eleves WHERE id_eleve = ?");
+$stmt->execute([$id_eleve]);
+$eleve = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Récupère uniquement les notes de la matière sélectionnée
+$stmt = $conn->prepare("SELECT * FROM notes WHERE id_eleve = ? AND nom_matiere = ?");
+$stmt->execute([$id_eleve, $matiere]);
+$notes = $stmt->fetch(PDO::FETCH_ASSOC);
 
 function color_note($note) {
-    return "note";
+    return "note"; // toutes les notes en noir
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Mon Espace Élève</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
+<meta charset="UTF-8">
+<title>Notes de <?= htmlspecialchars($matiere) ?></title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
 
-        .header {
-            background:#3a7d44;
-            color:white;
-            padding:10px;
-            margin-bottom:20px;
-        }
+.header {
+    background:#3a7d44;
+    color:white;
+    padding:10px;
+    margin-bottom:20px;
+}
 
-        h2 {
-            color:#333;
-        }
+h2 {
+    color:#333;
+    text-align:center;
+}
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            background: white;
-        }
+table {
+    border-collapse: collapse;
+    width: 60%;
+    margin: auto;
+    background: white;
+}
 
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-            color: #000;
-        }
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    color: #000;
+}
 
-        th {
-            background-color: #eee;
-            font-weight: bold;
-        }
+th {
+    background-color: #eee;
+    font-weight: bold;
+}
 
-        tr:nth-child(even) {
-            background-color: #fafafa;
-        }
+tr:nth-child(even) {
+    background-color: #fafafa;
+}
 
-        .note {
-            color: #000;
-            font-weight: normal;
-        }
+.note {
+    color: #000;
+}
 
-        a.button {
-            display:inline-block;
-            margin-top:20px;
-            padding:8px 15px;
-            background:#3a7d44;
-            color:white;
-            text-decoration:none;
-        }
+a.button {
+    display:inline-block;
+    margin-top:20px;
+    padding:8px 15px;
+    background:#3a7d44;
+    color:white;
+    text-decoration:none;
+}
 
-        .footer {
-            margin-top:30px;
-            font-size:12px;
-            color:#555;
-        }
-    </style>
+a.button:hover {
+    background:#2f6131;
+}
+</style>
 </head>
 <body>
 
 <div class="header">
-    <h1>Mon Espace Élève</h1>
+    <h1>Notes par Matière</h1>
 </div>
 
-<h2>Salut <?= htmlspecialchars($nom_eleve); ?>, voici tes notes</h2>
+<h2><?= htmlspecialchars($eleve['nom_prenom']) ?> – <?= htmlspecialchars($matiere) ?></h2>
 
-<table>
-    <tr>
-        <th>Matière</th>
-        <th>Interro 1</th>
-        <th>Interro 2</th>
-        <th>Interro 3</th>
-        <th>Devoir 1</th>
-        <th>Devoir 2</th>
-        <th>Moyenne</th>
-    </tr>
-
-<?php
-$stmt = $conn->prepare("SELECT * FROM notes WHERE id_eleve = ?");
-$stmt->execute([$eleve_id]);
-$notes_eleves = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-foreach ($notes_eleves as $notes) {
+<?php if ($notes): 
     $moyenne = (
         $notes['interro1'] +
         $notes['interro2'] +
@@ -109,22 +108,35 @@ foreach ($notes_eleves as $notes) {
         $notes['devoir2']
     ) / 5;
 ?>
+<table>
     <tr>
-        <td><?= htmlspecialchars($notes['nom_matiere']) ?></td>
+        <th>Interro 1</th>
+        <th>Interro 2</th>
+        <th>Interro 3</th>
+        <th>Devoir 1</th>
+        <th>Devoir 2</th>
+        <th>Moyenne</th>
+    </tr>
+    <tr>
         <td class="note"><?= $notes['interro1'] ?></td>
         <td class="note"><?= $notes['interro2'] ?></td>
         <td class="note"><?= $notes['interro3'] ?></td>
         <td class="note"><?= $notes['devoir1'] ?></td>
         <td class="note"><?= $notes['devoir2'] ?></td>
-        <td class="note"><?= number_format($moyenne, 2) ?></td>
+        <td class="note"><?= number_format($moyenne,2) ?></td>
     </tr>
-<?php } ?>
-
 </table>
+<?php else: ?>
+<p style="text-align:center; font-weight:bold;">Aucune note trouvée pour cette matière.</p>
+<?php endif; ?>
 
-<a class="button" href="login.php">Déconnexion</a>
+<p style="text-align:center;">
+    <a class="button" href="accueil.php?id_eleve=<?= $id_eleve ?>">Retour aux matières</a>
+</p>  
+<p>
 
-<div class="footer">© 2026 – Projet de stage</div>
+    <a class="button" href="login.php">Déconnexion</a>
+</p>
 
 </body>
 </html>

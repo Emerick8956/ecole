@@ -11,12 +11,11 @@ echo "<h2>Liste des élèves</h2>";
 echo "<table border='1' style='border-collapse: collapse; width: 50%;'>";
 echo "<tr><th>Nom et Prénoms</th></tr>";
 
-// Si c'est un parent, on affiche uniquement son enfant
 if($_SESSION['prof'] === false) {
     $stmt = $conn->prepare("SELECT * FROM eleves WHERE id_eleve = ?");
     $stmt->execute([$_SESSION['eleve_id']]);
 } else {
-    // Professeur voit tous les élèves
+
     $stmt = $conn->query("SELECT * FROM eleves");
 }
 
